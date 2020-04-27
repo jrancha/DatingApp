@@ -4,6 +4,8 @@
 
 export const environment = {
   production: false,
+  whiteListedDomains: ['localhost:5000'],
+  blackListedDomains: ['localhost:5000/api/auth'],
   apiUrl: 'http://localhost:5000/api/'
 };
 
