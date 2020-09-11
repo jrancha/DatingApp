@@ -55,7 +55,7 @@ export function tokenGetter() {
       MemberDetailComponent,
       MemberEditComponent,
       PhotoEditorComponent
-   ],
+      ],
    imports: [
       BrowserModule,
       BrowserAnimationsModule,
@@ -75,7 +75,7 @@ export function tokenGetter() {
             whitelistedDomains: environment.whiteListedDomains,
             blacklistedRoutes: environment.blackListedDomains
          }
-      }),
+      })
    ],
    providers: [
       AuthService,
