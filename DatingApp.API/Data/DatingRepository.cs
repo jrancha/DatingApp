@@ -25,6 +25,11 @@ namespace DatingApp.API.Data
             _context.Remove(entity);
         }
 
+        public async Task<Like> GetLike(int userId, int recipientId)
+        {
+            return await _context.Likes.FirstOrDefaultAsync(x => x.LikerId == userId && x.LikeeId == recipientId);
+        }
+
         public async Task<Photo> GetMainPhotoForUser(int userId)
         {
             return await _context.Photos.Where(p => p.UserId == userId).FirstOrDefaultAsync(p => p.IsMain);
@@ -46,6 +51,19 @@ namespace DatingApp.API.Data
         {
             var users = _context.Users.Include(u => u.Photos).OrderByDescending(x => x.LastActive).AsQueryable();
             users = users.Where(x => x.Id != userParams.UserId && x.Gender.Equals(userParams.Gender));
+
+            if (userParams.Likers)
+            {
+                var userLikers = await GetUserLikes(userParams.UserId, true);
+                users = users.Where(x => userLikers.Contains(x.Id));
+            }
+
+            if (userParams.Likees)
+            {
+                var userLikees = await GetUserLikes(userParams.UserId, false);
+                users = users.Where(x => userLikees.Contains(x.Id));
+            }
+
             if (userParams.MinAge != 18 || userParams.MaxAge != 99)
             {
                 var minDateOfBirth = DateTime.Today.AddYears(-userParams.MaxAge -1);
@@ -65,6 +83,20 @@ namespace DatingApp.API.Data
             }
 
             return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
+        }
+
+        private async Task<IEnumerable<int>>GetUserLikes(int id, bool likers)
+        {
+            var user = await _context.Users.Include(x => x.Likers).Include(x => x.Likees).FirstOrDefaultAsync(x => x.Id == id);
+
+            if (likers)
+            {
+                return user.Likers.Select(x => x.LikerId);
+            }
+            else
+            {
+                return user.Likees.Select(x => x.LikeeId);
+            }
         }
 
         public async Task<bool> SaveAll()
